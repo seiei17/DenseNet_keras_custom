@@ -16,7 +16,7 @@ paper提到了DenseNet的几个优点：
 
 **DenseNet**提出了一种概念，所有层接受其他层的input，同时也传输自己的output。而且区别于ResNet的地方是，在接受其他层的input的时候，不使用sum来整合，而是使用**concatenate**。
 
-因此，假设$l^{th}$层有$l$个输入，那么一个L层的网络结构总共有$L(L+1) \over 2$连接。
+因此，假设l层有l个输入，那么一个L层的网络结构总共有L(L+1) \ 2连接。
 
 DenseNet具有**更少的参数**，因为它认为网络中有很多不需要或没有很大作用的网络层可以直接舍弃，不需要学习多余的参数。论文指出，传统网络的前向传播是基于state的传播——接受上一层的输出，写入本层的信息，传递给下一层。这种传播传播的是一种状态，很多层只有很少量的作用但却有很大数量的独立权重，所以丢弃这些无用层可以减少很多参数量。
 
@@ -24,20 +24,26 @@ DenseNet的**宽度**较窄，只有一小部分的feature maps会作为collecti
 
 ### DenseNet
 #### ResNet的输出
-$$x_l = H_l(X_{l-1}) + X_{l-1}$$
+<img src="https://latex.codecogs.com/gif.latex?$$x_l&space;=&space;H_l(X_{l-1})&space;&plus;&space;X_{l-1}$$" title="$$x_l = H_l(X_{l-1}) + X_{l-1}$$" />
+
 其中，+操作是sum操作。
 paper指出，sum操作会阻碍信息的传播。
 
 #### Dense连接
-为了提高信息传播，paper提出了Dense连接模型，如Figure 1. 于是有：
-$$x_l=H_l([x_0,x_1,...,x_{l-1}])$$
-$x_0,x_1,...,x_{l-1$表示前l-1层的输出，组合操作为concatenate。
+
+![densecon](./depository/dense.png)
+
+为了提高信息传播，paper提出了Dense连接模型，如Figure 1. 于是有：<img src="https://latex.codecogs.com/gif.latex?$x_l=H_l([x_0,x_1,...,x_{l-1}])$" title="$x_l=H_l([x_0,x_1,...,x_{l-1}])$" />
+
+<img src="https://latex.codecogs.com/gif.latex?$x_0,x_1,...,x_{l-1}$" title="$x_0,x_1,...,x_{l-1}$" />表示前l-1层的输出，组合操作为concatenate。
 
 #### 复合function
 同ResNet，之后的**conv.** 操作表示batch normalization、relu、3x3 conv操作。
 
 #### Transition layer
 concatenate操作只能在feature map的size相同的情况下操作，所有需要池化层来进行下采样。
+
+![trans](./depository/trans.png)
 
 为了方便下采样的进行，paper将网络结构划分为多个**dense blocks**。而两个dense blocks之间的卷积、池化操作称为**transition layer**。
 
@@ -46,7 +52,7 @@ concatenate操作只能在feature map的size相同的情况下操作，所有需
 **transition layer由1x1 conv进行降维、2x2 average pooling** 组成。
 
 #### Growth rete
-假设$l$层的输出$H_l$产生$k$个feature maps，下一层总共有$k_0+k*(l-1)$层input。paper把k称为growth rate，即每一次层产生输出的维度。
+假设l层的输出$H_l$产生$k$个feature maps，下一层总共有<img src="https://latex.codecogs.com/gif.latex?$k_0&plus;k*(l-1)$" title="$k_0+k*(l-1)$" />层input。paper把k称为growth rate，即每一次层产生输出的维度。
 
 解释k，可以把网络总体的feature maps看作是网络的全局state，而每一层为这个global state加入自己产生的k层feature maps，即加入自身的state。对于这个全局state，每一层都可以直接接触到，而不像传统的networks是一层一层的传递。
 
@@ -55,7 +61,7 @@ DenseNet同样提出了**瓶颈结构**。
 
 瓶颈结构由一个1x1 conv.和3x3 conv.组成。其中，1x1 conv.输出维度为4k，3x3 conv.输出维度为k。
 
-解释这个bottleneck，前层产生的$n* k$feature maps，经过1x1 conv.降维到4k，再进行3x3 conv.，可以有效减少参数。
+解释这个bottleneck，前层产生的n* kfeature maps，经过1x1 conv.降维到4k，再进行3x3 conv.，可以有效减少参数。
 
 有bottleneck结构的DenseNet称为**DenseNet-B**。
 
@@ -67,6 +73,9 @@ DenseNet同样提出了**瓶颈结构**。
 而同时使用了bottleneck和压缩参量的模型称为**DenseNet-BC**。
 
 #### implementation details
+
+![architecture](./depository/architecture.png)
+
 上图为imagenet的网络结构。
 
 * 而在除了imagenet的其他数据集，paper均只使用3个相同的dense block。
